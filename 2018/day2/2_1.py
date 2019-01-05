@@ -1,9 +1,6 @@
 def get_input_text_array():
 
     input = []
-    # history = {}
-    # total = 0
-    # round = 1
 
     with open("input.txt") as file:
         for line in file:

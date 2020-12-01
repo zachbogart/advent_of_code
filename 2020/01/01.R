@@ -23,3 +23,4 @@ part_2_df = expand.grid(part_2, part_2, part_2) %>%
   mutate(total = Var1 + Var2 + Var3) %>% 
   filter(total == 2020) %>% 
   mutate(prod = Var1 * Var2 * Var3)
+

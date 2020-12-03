@@ -1,5 +1,5 @@
 ---
-output: html_document
+output: pdf_document
 editor_options: 
   chunk_output_type: inline
 ---
@@ -12,8 +12,8 @@ https://adventofcode.com/2020/day/2
 library(tidyverse)
 ```
 
-```{r}
-input = read_delim("02-input.txt", delim = "\n", col_names = "text")
+```{r message=FALSE}
+input = read_delim("inputs/02-input.txt", delim = "\n", col_names = "text")
 ```
 
 ## Part 1

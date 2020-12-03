@@ -1,7 +1,8 @@
 ---
-output: html_document
+output: pdf_document
 editor_options: 
   chunk_output_type: inline
+output_dir: ../
 ---
 
 # Day 1: Report Repair
@@ -12,8 +13,8 @@ https://adventofcode.com/2020/day/1
 library(tidyverse)
 ```
 
-```{r}
-input = read_delim("01-input.txt", delim = "\n", col_names = "value")
+```{r message=FALSE}
+input = read_delim("inputs/01-input.txt", delim = "\n", col_names = "value")
 ```
 
 # Part 1

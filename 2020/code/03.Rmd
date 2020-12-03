@@ -1,5 +1,5 @@
 ---
-output: html_document
+output: pdf_document
 editor_options: 
   chunk_output_type: inline
 ---
@@ -19,7 +19,7 @@ library(tidyverse)
 - Given patterns repeat
 
 ```{r message=FALSE}
-raw = read_delim("03-input.txt", delim="\n", col_names = "text")
+raw = read_delim("inputs/03-input.txt", delim="\n", col_names = "text")
 ```
 
 How long is every string?

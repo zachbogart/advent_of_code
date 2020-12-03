@@ -3,9 +3,12 @@ output: html_document
 editor_options: 
   chunk_output_type: inline
 ---
+
 # Day 3: Toboggan Trajectory
 
-```{r}
+https://adventofcode.com/2020/day/3
+
+```{r include=FALSE}
 library(tidyverse)
 ```
 
@@ -15,7 +18,7 @@ library(tidyverse)
 - Input, going **right 3 down 1** every row
 - Given patterns repeat
 
-```{r}
+```{r message=FALSE}
 raw = read_delim("03-input.txt", delim="\n", col_names = "text")
 ```
 
@@ -54,11 +57,11 @@ We hit 171 trees.
 
 - add more slopes this time!
 
-Right 1, down 1.
-Right 3, down 1. (This is the slope you already checked.)
-Right 5, down 1.
-Right 7, down 1.
-Right 1, down 2.
+- Right 1, down 1.
+- Right 3, down 1. (This is the slope you already checked.)
+- Right 5, down 1.
+- Right 7, down 1.
+- Right 1, down 2.
 
 Should all be straight forward except a little filtering for the down 2 example. Will need to repeat the string a few more times.
 

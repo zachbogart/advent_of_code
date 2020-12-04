@@ -3,3 +3,4 @@
 .gitignore
 *.Rproj
 .Rhistory
+.ipynb_checkpoints

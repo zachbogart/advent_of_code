@@ -1,0 +1,38 @@
+---
+output: pdf_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Day 4: Passport Processing Attempt
+
+https://adventofcode.com/2020/day/4
+
+- attempted to start this off in R. Got incredibly frustrated trying to make dictionaries, which is not a native thing. 
+- ended up moving to Python Notebook
+
+```{r include=FALSE}
+library(tidyverse)
+```
+
+
+## Part 1
+
+```{r}
+raw = read_file("inputs/04-input.txt")
+
+define_delim = str_replace_all(raw, "\n\n", "|")
+define_delim = str_replace_all(define_delim, "\n", " ")
+define_delim = str_replace(define_delim, " $", "")
+
+input = data.frame(strsplit(define_delim, "|", fixed = TRUE)) %>% 
+  set_names("text")
+```
+
+```{r}
+input %>% 
+  mutate(foo = strsplit(text, " "))
+
+```
+
+I'm finding this waaay to infuriating in R.

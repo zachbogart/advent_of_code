@@ -1,0 +1,66 @@
+---
+output: pdf_document
+editor_options: 
+  chunk_output_type: inline
+author: "Zach Bogart"
+title: "Advent of Code 2020"
+---
+
+# Day 6: Custom Customs
+
+https://adventofcode.com/2020/day/6
+
+```{r include=FALSE}
+library(tidyverse)
+```
+
+```{r}
+input = tibble(x = readLines("inputs/06-input.txt"))
+```
+
+# Part 1
+
+```{r message=FALSE}
+# anyone answered "yes"
+part1 = input %>% 
+  mutate(group = cumsum(x == "")) %>% 
+  group_by(group) %>% 
+  summarise(all_responses = paste0(x, collapse="")) %>% 
+  mutate(unique_questions = lapply(strsplit(all_responses, ""), unique)) %>% 
+  rowwise() %>% 
+  mutate(questions_answered = length(unique_questions)) 
+
+sum(part1$questions_answered)
+
+# make group column to separate groups of people
+# for every group
+# combine into one big string of responses
+# break up and apply unique 
+# get number of unique responses by row
+
+# sum # unique questions answered for all groups
+```
+
+# Part 2
+
+```{r message=FALSE}
+# everyone answered "yes"
+part2 = input %>% 
+  mutate(group = cumsum(x == "")) %>% 
+  filter(x != "") %>% 
+  mutate(chars = str_split(x, "")) %>% 
+  group_by(group) %>% 
+  summarise(questions_everyone_answered = paste0(Reduce(intersect, chars), collapse="")) %>% 
+  mutate(shared_count = nchar(questions_everyone_answered)) 
+
+sum(part2$shared_count) 
+
+# make group column to separate groups of people
+# remove blank lines
+# split each person's responses up 
+# for every group
+# find intersection between responses for each person, combine into string
+# find number of characters in string of questions_everyone_answered
+
+# sum # unique questions answered by everyone
+```

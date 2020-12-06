@@ -1,0 +1,43 @@
+---
+output: pdf_document
+editor_options: 
+  chunk_output_type: inline
+author: "Zach Bogart"
+title: "Advent of Code 2015"
+date: "`r Sys.Date()`"
+---
+
+# Day 1: Not Quite Lisp
+
+https://adventofcode.com/2020/day/6
+
+```{r include=FALSE}
+library(tidyverse)
+```
+
+```{r}
+raw = read_file("inputs/01-input.txt") %>% 
+  str_split("")
+
+input = tibble(x = raw[[1]])
+```
+
+# Part 1
+
+```{r}
+input %>% 
+  mutate(number = ifelse(x == "(", 1, -1)) %>% 
+  summarise(total = sum(number))
+```
+
+# Part 2
+
+```{r}
+input %>% 
+  mutate(index = row_number()) %>% 
+  mutate(number = ifelse(x == "(", 1, -1)) %>% 
+  mutate(progress = cumsum(number)) %>% 
+  filter(progress < 0) %>% 
+  arrange(index)
+```
+

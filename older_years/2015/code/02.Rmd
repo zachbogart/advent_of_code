@@ -1,0 +1,70 @@
+---
+output: pdf_document
+editor_options: 
+  chunk_output_type: inline
+author: "Zach Bogart"
+title: "Advent of Code 2020"
+date: "`r Sys.Date()`"
+---
+
+# Day 2: I Was Told There Would Be No Math
+
+[Click for Problem Statement](https://adventofcode.com/2015/day/2)
+
+---
+
+```{r include=FALSE}
+library(tidyverse)
+```
+
+```{r}
+input = tibble(x = readLines("inputs/02-input.txt"))
+```
+
+# Part 1
+
+- surface area of package, plus extra (smallest side)
+- sum all values
+
+```{r}
+part1 = input %>% 
+  separate(x, into = c("l", "w", "h"), sep = "x", convert = TRUE) %>% 
+  mutate(l_w = l * w,
+         w_h = w * h,
+         h_l = h * l) %>% 
+  rowwise() %>% 
+  mutate(extra = min(l_w, w_h, h_l)) %>% 
+  mutate(area = (2*l_w) + (2*w_h) + (2*h_l) + extra)
+
+head(part1)
+```
+
+```{r}
+sum(part1$area)
+```
+
+\newpage
+
+## Part 2
+
+- shortest perimeter around package, plus bow (volume of package)
+- sum all values
+
+```{r}
+part2 = input %>% 
+  separate(x, into = c("l", "w", "h"), sep = "x", convert = TRUE) %>% 
+  mutate(l_wrap = 2*h + 2*w,
+         w_wrap = 2*h + 2*l,
+         h_wrap = 2*l + 2*w) %>% 
+  rowwise() %>% 
+  mutate(shortest_perimeter = min(l_wrap, w_wrap, h_wrap),
+         bow = l * w * h) %>% 
+  mutate(ribbon_length = shortest_perimeter + bow)
+
+head(part2)
+```
+
+```{r}
+sum(part2$ribbon_length)
+```
+

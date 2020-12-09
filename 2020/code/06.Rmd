@@ -41,6 +41,8 @@ sum(part1$questions_answered)
 # sum # unique questions answered for all groups
 ```
 
+\newpage
+
 # Part 2
 
 ```{r message=FALSE}

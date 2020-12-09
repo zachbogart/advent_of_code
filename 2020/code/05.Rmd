@@ -18,6 +18,8 @@ library(tidyverse)
 input = tibble(x = read_lines("inputs/05-input.txt"))
 ```
 
+\newpage
+
 ## Part 1
 
 - make a function to narrow in on the range of possible values
@@ -56,6 +58,8 @@ head(part1)
 answer = part1[1, "seat_id"]
 answer
 ```
+
+\newpage
 
 # Part 2
 

@@ -43,6 +43,8 @@ part_1 = df %>%
 nrow(part_1)
 ```
 
+\newpage
+
 ## Part 2
 
 - get letters at index of string (R uses one-indexing so simple enough)

@@ -3,7 +3,7 @@ output: pdf_document
 editor_options: 
   chunk_output_type: inline
 author: "Zach Bogart"
-title: "Advent of Code 2020"
+title: "Advent of Code 2015"
 date: "`r Sys.Date()`"
 ---
 

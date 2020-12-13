@@ -1,0 +1,106 @@
+---
+output: pdf_document
+editor_options: 
+  chunk_output_type: inline
+author: "Zach Bogart"
+title: "Advent of Code 2020"
+date: "`r Sys.Date()`"
+---
+
+# Day 10: Adapter Array
+
+[Click for Problem Statement](https://adventofcode.com/2020/day/10)
+
+---
+
+```{r include=FALSE}
+library(tidyverse)
+```
+
+```{r}
+testing1 = tibble(x = as.numeric(readLines("inputs/10-test1.txt")))
+testing2 = tibble(x = as.numeric(readLines("inputs/10-test2.txt")))
+input = tibble(x = as.numeric(read_lines("inputs/10-input.txt")))
+```
+
+\newpage
+
+# Part 1
+
+## Testing
+
+```{r}
+t2_p1 = testing2 %>% 
+  add_row(x = 0) %>% # charging outlet
+  add_row(x = max(.$x, na.rm=TRUE) + 3) %>%  # end adapter
+  arrange(x) %>% 
+  mutate(diff = x - lag(x)) %>% 
+  mutate(j1 = diff == 1,
+         j3 = diff == 3) 
+
+t2_p1 %>% 
+  summarise(total_j1 = sum(j1, na.rm = TRUE),
+            total_j3 = sum(j3, na.rm = TRUE),
+            answer = total_j1 * total_j3)
+```
+
+## The Real Thing
+
+```{r}
+part1 = input %>% 
+  add_row(x = 0) %>% # charging outlet
+  add_row(x = max(.$x, na.rm=TRUE) + 3) %>%  # end adapter
+  arrange(x) %>% 
+  mutate(diff = x - lag(x)) %>% 
+  mutate(j1 = diff == 1,
+         j3 = diff == 3)
+
+part1 %>% 
+  summarise(total_j1 = sum(j1, na.rm = TRUE),
+            total_j3 = sum(j3, na.rm = TRUE),
+            answer = total_j1 * total_j3)
+```
+
+\newpage
+
+# Part 2
+
+## Testing
+
+Doing some working out, seems to be that each additional adapter in a string of 1-jolts gives a multiple of three more options.
+
+- need to find strings of ones, count size of string, and multiply results based on rules
+
+- One 1-jolt provides only one option
+- Two 1-jolts provide only two options
+- For `n >= 3` 1-jolts, they provide `3(n-2) + 1` options
+
+```{r}
+t2_p2 = t2_p1 %>% 
+  filter(!is.na(diff)) %>% 
+  mutate(one_string = cumsum(diff == 3)) %>% 
+  filter(diff != 3) %>% 
+  group_by(one_string) %>% 
+  summarise(options = ifelse(n() == 1, 1, ifelse(n() == 2, 2, 3*(n()-2) + 1)))
+
+t2_p2 %>% 
+  summarise(answer = prod(options))
+```
+
+## The Real Thing
+
+```{r}
+options(scipen=30)
+
+part2 = part1 %>% 
+  filter(!is.na(diff)) %>% 
+  mutate(one_string = cumsum(diff == 3)) %>% 
+  filter(diff != 3) %>% 
+  group_by(one_string) %>% 
+  summarise(options = ifelse(n() == 1, 1, ifelse(n() == 2, 2, 3*(n()-2) + 1)))
+
+part2 %>% 
+  summarise(answer = format(prod(options), big.mark = ","))
+```
+
+

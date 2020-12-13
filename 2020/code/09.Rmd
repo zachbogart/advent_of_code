@@ -1,0 +1,96 @@
+---
+output: pdf_document
+editor_options: 
+  chunk_output_type: inline
+author: "Zach Bogart"
+title: "Advent of Code 2020"
+date: "`r Sys.Date()`"
+---
+
+# Day 9: Encoding Error
+
+[Click for Problem Statement](https://adventofcode.com/2020/day/9)
+
+---
+
+```{r include=FALSE}
+library(tidyverse)
+```
+
+```{r}
+input = tibble(x = readLines("inputs/09-input.txt")) %>% 
+  mutate(x = as.numeric(x),
+         row = row_number())
+```
+
+\newpage
+
+# Part 1
+
+```{r}
+check_current_value = function(input, n) {
+  start = n-25
+  end = n-1
+  
+  check_data = input %>% 
+    slice(start: end) %>% 
+    pull(x)
+  
+  check_grid = expand.grid(check_data, check_data) %>% 
+    mutate(sum = Var1 + Var2) %>% 
+    pull(sum) %>% 
+    unique()
+  
+  current_value = pull(input[n, "x"])
+  
+  return(current_value %in% check_grid)
+}
+```
+
+```{r}
+data = input %>% 
+  slice(26:nrow(.))
+```
+
+```{r}
+part1 = data %>% 
+  rowwise() %>% 
+  mutate(in_previous_sum = check_current_value(input, row))
+```
+
+```{r}
+part1 %>% 
+  filter(!in_previous_sum)
+```
+
+\newpage
+
+# Part 2
+
+```{r}
+invalid_number = part1 %>% 
+  filter(!in_previous_sum) %>% 
+  pull(x)
+```
+
+The rest of this is a mess...
+
+Understanding [David Robinson's solution](https://twitter.com/drob/status/1336544038502223872/photo/1): 
+
+```{r}
+candidates = input$x[input$x < invalid_number] # just keep the numbers that are below part1 answer
+
+x = crossing(start = seq_along(candidates),
+         end = seq_along(candidates)) %>% # crossing is wrapper for expand_grid(), deduplicates/sorts
+  filter(end > start) %>% # just contiguous in the forward direction
+  mutate(subset = map2(start, end, ~ candidates[.x:.y])) %>% # two arguments, slice into crossed options
+  mutate(total = map_dbl(subset, ~ sum(.x))) %>% # sum the subset values
+  filter(total == invalid_number) %>% # find row where total equals part1 answer
+  mutate(smallest = map_dbl(subset, min),
+         largest = map_dbl(subset, max)) %>% # get the smallest and largest values
+  mutate(answer = smallest + largest) #sum them together
+
+x
+```
+
+

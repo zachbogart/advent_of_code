@@ -1,0 +1,60 @@
+---
+title: "AoC 2021: Day 1"
+author: "Zach"
+date: "11/30/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Day 1: Sonar Sweep
+
+[Click for Problem Statement](https://adventofcode.com/2021/day/1)
+
+```{r include=FALSE, eval=FALSE}
+# use this to render
+rmarkdown::render(input = "2021/code/01.Rmd", output_dir = "2021/")
+```
+
+---
+
+```{r message=FALSE}
+library(tidyverse)
+library(here)
+```
+
+```{r}
+input <- tibble(first = as.numeric(read_lines(here("2021/inputs/01-input.txt"))))
+```
+
+## Part 1
+
+```{r}
+
+part_1 <- input %>% 
+  mutate(prev = lag(first)) %>% 
+  select(prev, first) %>% 
+  mutate(change = first > prev) %>% 
+  fill(change, .direction = "up")
+
+part_1 %>% 
+  summarise(sum(change))
+
+```
+
+## Part 2
+
+```{r}
+part_2 <- input %>% 
+  mutate(second = lag(first),
+         third = lag(second)) %>% 
+  mutate(total = first + second + third) %>% 
+  mutate(change = total > lag(total))
+
+part_2 %>% 
+  summarise(sum(change, na.rm = TRUE))
+
+```
+

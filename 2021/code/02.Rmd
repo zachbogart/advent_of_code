@@ -10,8 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r include=FALSE, eval=FALSE}
 # run this chunk to render
-day <- 1
-day_title <- "Sonar Sweep"
+day <- 2
+day_title <- "TODO"
 
 day_str <- stringr::str_pad(day, 2, pad = "0")
 rmarkdown::render(input = paste0("2021/code/", day_str, ".Rmd"), 
@@ -27,6 +27,8 @@ title: "`r paste0("AoC 2021: Day ", day)`"
 
 [Click for Problem Statement](`r paste0("https://adventofcode.com/2021/day/", day)`)
 
+[Test](/2021/)
+
 ---
 
 ```{r message=FALSE}
@@ -35,35 +37,18 @@ library(here)
 ```
 
 ```{r}
-input <- tibble(first = as.numeric(read_lines(here("2021/inputs/01-input.txt"))))
+# input <- tibble(first = as.numeric(read_lines(here("2021/inputs/TODO"))))
 ```
 
 ## Part 1
 
 ```{r}
 
-part_1 <- input %>% 
-  mutate(prev = lag(first)) %>% 
-  select(prev, first) %>% 
-  mutate(change = first > prev) %>% 
-  fill(change, .direction = "up")
-
-part_1 %>% 
-  summarise(sum(change))
-
 ```
 
 ## Part 2
 
 ```{r}
-part_2 <- input %>% 
-  mutate(second = lag(first),
-         third = lag(second)) %>% 
-  mutate(total = first + second + third) %>% 
-  mutate(change = total > lag(total))
-
-part_2 %>% 
-  summarise(sum(change, na.rm = TRUE))
 
 ```
 

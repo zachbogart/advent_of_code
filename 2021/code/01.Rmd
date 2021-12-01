@@ -1,7 +1,6 @@
 ---
-title: "AoC 2021: Day 1"
-author: "Zach"
-date: "11/30/2021"
+author: "Zach Bogart"
+date: "`r Sys.Date()`"
 output: html_document
 ---
 
@@ -9,16 +8,23 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Day 1: Sonar Sweep
-
-[Click for Problem Statement](https://adventofcode.com/2021/day/1)
-
 ```{r include=FALSE, eval=FALSE}
-# use this to render
-rmarkdown::render(input = "2021/code/01.Rmd", 
-                  output_dir = "2021/",
+# run this chunk to render
+day <- 1
+
+day_str <- stringr::str_pad(day, 2, pad = "0")
+rmarkdown::render(input = paste0("2021/code/", day_str, ".Rmd"), 
+                  output_dir = paste0("2021/", day),
                   output_file = "index.html")
 ```
+
+---
+title: "`r paste0("AoC 2021: Day ", day)`"
+---
+
+# Day 1: Sonar Sweep
+
+[Click for Problem Statement](`r paste0("https://adventofcode.com/2021/day/", day)`)
 
 ---
 

@@ -27,6 +27,8 @@ title: "`r paste0("AoC 2021: Day ", day)`"
 
 [Click for Problem Statement](`r paste0("https://adventofcode.com/2021/day/", day)`)
 
+[Back to 2021](/advent_of_code/2021/)
+
 ---
 
 ```{r message=FALSE}

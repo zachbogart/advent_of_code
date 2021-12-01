@@ -15,7 +15,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r include=FALSE, eval=FALSE}
 # use this to render
-rmarkdown::render(input = "2021/code/01.Rmd", output_dir = "2021/")
+rmarkdown::render(input = "2021/code/01.Rmd", 
+                  output_dir = "2021/",
+                  output_file = "index.html")
 ```
 
 ---

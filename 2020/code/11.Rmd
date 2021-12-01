@@ -1,0 +1,60 @@
+---
+output: pdf_document
+editor_options: 
+  chunk_output_type: inline
+author: "Zach Bogart"
+title: "Advent of Code 2020"
+date: "`r Sys.Date()`"
+---
+
+# Day 11: Seating System
+
+[Click for Problem Statement](https://adventofcode.com/2020/day/10)
+
+---
+
+```{r include=FALSE}
+library(tidyverse)
+```
+
+```{r}
+testing1 = tibble(x = readLines("inputs/11-test1.txt"))
+input = tibble(x = read_lines("inputs/11-input.txt"))
+```
+
+# Part 1
+
+```{r}
+row_length = nchar(testing1[1, 1])
+
+cols = as.character(seq(1,row_length, 1))
+
+df = testing1 %>% 
+  mutate(row = row_number()) %>% 
+  separate(x, sep = 1:row_length, into = cols) %>% 
+  pivot_longer(cols = cols, names_to = "column", values_to = "seat") %>% 
+  mutate(index = row_number(),
+         column = as.numeric(column),
+         coord = paste(row, column, sep="_")) %>% 
+  select(index, coord, everything())
+
+all_seats = df$coord
+
+result = df %>% 
+  mutate(up = paste((row - 1), (column), sep = "_"),
+         up_left = paste((row - 1), (column - 1), sep = "_"),
+         up_right = paste((row - 1), (column + 1), sep = "_"),
+         mid_left = paste((row), (column - 1), sep = "_"),
+         mid_right = paste((row), (column + 1), sep = "_"),
+         down_left = paste((row + 1), (column - 1), sep = "_"),
+         down = paste((row + 1), (column), sep = "_"),
+         down_right = paste((row + 1), (column + 1), sep = "_")) 
+
+directions = colnames(result)[6:13]
+
+result %>% 
+  rowwise() %>% 
+  mutate(neighbors = list(c(up_left, up, up_right, mid_left, mid_right, down_left, down, down_right))) %>% 
+  mutate(m = list(map(neighbors, ~ ifelse(.x %in% all_seats, .x, NA))))
+
+```

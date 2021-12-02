@@ -11,7 +11,7 @@
 
 <meta name="author" content="Zach Bogart" />
 
-<meta name="date" content="2021-11-30" />
+<meta name="date" content="2021-12-01" />
 
 <title>AoC 2021: Day 2</title>
 
@@ -167,24 +167,94 @@ pre code {
 
 <h1 class="title toc-ignore">AoC 2021: Day 2</h1>
 <h4 class="author">Zach Bogart</h4>
-<h4 class="date">2021-11-30</h4>
+<h4 class="date">2021-12-01</h4>
 
 </div>
 
 
-<div id="day-2-todo" class="section level1">
-<h1>Day 2: TODO</h1>
+<div id="day-2-dive" class="section level1">
+<h1>Day 2: Dive!</h1>
 <p><a href="https://adventofcode.com/2021/day/2">Click for Problem Statement</a></p>
 <p><a href="/advent_of_code/2021/">Back to 2021</a></p>
 <hr />
 <pre class="r"><code>library(tidyverse)
 library(here)</code></pre>
-<pre class="r"><code># input &lt;- tibble(first = as.numeric(read_lines(here(&quot;2021/inputs/TODO&quot;))))</code></pre>
+<pre class="r"><code>path_data &lt;- here(&quot;2021/inputs/02-input.txt&quot;)
+input &lt;- tibble(x = read_lines(path_data))</code></pre>
 <div id="part-1" class="section level2">
 <h2>Part 1</h2>
+<p>This went quite well, but set me up for troubles in Part 2</p>
+<pre class="r"><code># this works great, but &quot;convert&quot; will give troubles later
+part_1 &lt;- input %&gt;% 
+  separate(sep = &quot; &quot;, col = x, into = c(&quot;inst&quot;, &quot;num&quot;), convert = TRUE)
+
+result &lt;- part_1 %&gt;% 
+  group_by(inst) %&gt;% 
+  summarise(total = sum(num))
+
+# input the answer by hand
+# meaning (2053 - 1137) * 1845
+result</code></pre>
+<pre><code>## # A tibble: 3 × 2
+##   inst    total
+##   &lt;chr&gt;   &lt;int&gt;
+## 1 down     2053
+## 2 forward  1845
+## 3 up       1137</code></pre>
+<pre class="r"><code>answering &lt;- result %&gt;% pull(total)
+
+(answering[1] - answering[3]) * answering[2]</code></pre>
+<pre><code>## [1] 1690020</code></pre>
 </div>
 <div id="part-2" class="section level2">
 <h2>Part 2</h2>
+<p><code>case_when</code> got mad since <code>separate</code> converted to integers, which confuzzled me for a long while. Not converting was the way to go, control as numeric.</p>
+<p>Use a bunch of cumulative sums with some selective interim columns worked.</p>
+<pre class="r"><code>part_2 &lt;- input %&gt;% 
+  separate(sep = &quot; &quot;, col = x, into = c(&quot;inst&quot;, &quot;num&quot;)) %&gt;% 
+  mutate(num = as.numeric(num))
+
+# create interim columns to define conitional changes
+# sum them up
+travel &lt;- part_2 %&gt;% 
+  mutate(aiming = case_when(
+    inst == &quot;up&quot; ~ num * -1,
+    inst == &quot;down&quot; ~ num,
+    inst == &quot;forward&quot; ~ 0
+  )) %&gt;% 
+  mutate(aim_total = cumsum(aiming)) %&gt;% 
+  mutate(horiz = ifelse(inst == &quot;forward&quot;, num, 0),
+         horiz_total = cumsum(horiz)) %&gt;% 
+  mutate(depth_increase = horiz * aim_total,
+         depth_total = cumsum(depth_increase))
+
+travel</code></pre>
+<pre><code>## # A tibble: 1,000 × 8
+##    inst      num aiming aim_total horiz horiz_total depth_increase depth_total
+##    &lt;chr&gt;   &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;       &lt;dbl&gt;          &lt;dbl&gt;       &lt;dbl&gt;
+##  1 forward     4      0         0     4           4              0           0
+##  2 down        8      8         8     0           4              0           0
+##  3 down        8      8        16     0           4              0           0
+##  4 up          2     -2        14     0           4              0           0
+##  5 up          7     -7         7     0           4              0           0
+##  6 forward     5      0         7     5           9             35          35
+##  7 forward     5      0         7     5          14             35          70
+##  8 up          7     -7         0     0          14              0          70
+##  9 down        6      6         6     0          14              0          70
+## 10 down        3      3         9     0          14              0          70
+## # … with 990 more rows</code></pre>
+<pre class="r"><code># did this by hand, take the last row
+# depth_total * horiz_total
+answering2 &lt;- travel %&gt;% 
+  tail(1)
+answering2</code></pre>
+<pre><code>## # A tibble: 1 × 8
+##   inst      num aiming aim_total horiz horiz_total depth_increase depth_total
+##   &lt;chr&gt;   &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;       &lt;dbl&gt;          &lt;dbl&gt;       &lt;dbl&gt;
+## 1 forward     4      0       916     4        1845           3664      763408</code></pre>
+<pre class="r"><code>answering2$depth_total * answering2$horiz_total</code></pre>
+<pre><code>## [1] 1408487760</code></pre>
+<p>Okay byeeeeeeeeee</p>
 </div>
 </div>
 

@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r include=FALSE, eval=FALSE}
 # run this chunk to render
 day <- 2
-day_title <- "TODO"
+day_title <- "Dive!"
 
 day_str <- stringr::str_pad(day, 2, pad = "0")
 rmarkdown::render(input = paste0("2021/code/", day_str, ".Rmd"), 
@@ -37,18 +37,69 @@ library(here)
 ```
 
 ```{r}
-# input <- tibble(first = as.numeric(read_lines(here("2021/inputs/TODO"))))
+path_data <- here("2021/inputs/02-input.txt")
+input <- tibble(x = read_lines(path_data))
 ```
 
 ## Part 1
 
+This went quite well, but set me up for troubles in Part 2
+
 ```{r}
+# this works great, but "convert" will give troubles later
+part_1 <- input %>% 
+  separate(sep = " ", col = x, into = c("inst", "num"), convert = TRUE)
+
+result <- part_1 %>% 
+  group_by(inst) %>% 
+  summarise(total = sum(num))
+
+# input the answer by hand
+# meaning (2053 - 1137) * 1845
+result
+
+answering <- result %>% pull(total)
+
+(answering[1] - answering[3]) * answering[2]
 
 ```
 
 ## Part 2
 
+`case_when` got mad since `separate` converted to integers, which confuzzled me for a long while. Not converting was the way to go, control as numeric.
+
+Use a bunch of cumulative sums with some selective interim columns worked.
+
 ```{r}
+part_2 <- input %>% 
+  separate(sep = " ", col = x, into = c("inst", "num")) %>% 
+  mutate(num = as.numeric(num))
+
+# create interim columns to define conitional changes
+# sum them up
+travel <- part_2 %>% 
+  mutate(aiming = case_when(
+    inst == "up" ~ num * -1,
+    inst == "down" ~ num,
+    inst == "forward" ~ 0
+  )) %>% 
+  mutate(aim_total = cumsum(aiming)) %>% 
+  mutate(horiz = ifelse(inst == "forward", num, 0),
+         horiz_total = cumsum(horiz)) %>% 
+  mutate(depth_increase = horiz * aim_total,
+         depth_total = cumsum(depth_increase))
+
+travel
+
+# did this by hand, take the last row
+# depth_total * horiz_total
+answering2 <- travel %>% 
+  tail(1)
+answering2
+
+answering2$depth_total * answering2$horiz_total
+
 
 ```
 
+Okay byeeeeeeeeee

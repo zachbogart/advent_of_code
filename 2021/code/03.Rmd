@@ -1,0 +1,212 @@
+---
+author: "Zach Bogart"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+```{r include=FALSE, eval=FALSE}
+# run this chunk to render
+day <- 3
+day_title <- "Binary Diagnostic"
+
+day_str <- stringr::str_pad(day, 2, pad = "0")
+rmarkdown::render(input = paste0("2021/code/", day_str, ".Rmd"), 
+                  output_dir = paste0("2021/", day),
+                  output_file = "index.html")
+```
+
+---
+title: "`r paste0("AoC 2021: Day ", day)`"
+---
+
+# Day `r day`: `r day_title`
+
+[Click for Problem Statement](`r paste0("https://adventofcode.com/2021/day/", day)`)
+
+[Back to 2021](/advent_of_code/2021/)
+
+---
+
+```{r message=FALSE}
+library(tidyverse)
+library(here)
+```
+
+```{r}
+path_data <- here("2021/inputs/03-input.txt")
+input <- tibble(x = read_lines(path_data))
+```
+
+This one was all about binary numbers. In general, I'm not trying to go fast, more trying to learn something. This time, went in confident and Part 1 went pretty easily. Part 2 kicked my butt because of wanting to make a dplyr function to solve it. I find creating dplyr functions super confusing and this one checked all the boxes. No...I didn't get frustrated, that would be silly. Why would THAT happen. I'm just trying to a pass a simple VARIABLE NAME! I'M NOT YELLING, YOU'RE YELLING! (inhale) It's fine. :)
+
+Let's take a look...
+
+## Part 1
+
+![](https://media.giphy.com/media/xT3i1hEJ7Eh8vtktMs/giphy.gif)
+
+This was pretty straight forward: 
+
+- separate the strings into columns, one for each place
+- count up the ones and zeroes in each place column
+- filter for the highest value for each place
+
+We end up with a dataframe of places and zeroes or ones
+
+```{r message=FALSE}
+# split strings into columns, convert to numbers
+# (type conversion was trouble on day 2, sort of happened again here)
+data <- input %>% 
+  separate(x, into = as.character(seq(1,12)), 
+           sep = seq(1,12)) %>% 
+  mutate(across(.cols = everything(), ~as.numeric(.)))
+
+# pivot, count columns, 
+# filter most common value in each place
+most_common <- data %>% 
+  pivot_longer(cols = everything(), names_to = "place", values_to = "num") %>% 
+  mutate(place = as.numeric(place)) %>% 
+  group_by(place, num) %>% 
+  summarise(total = n()) %>% 
+  group_by(place) %>% 
+  filter(total == max(total)) %>% 
+  arrange(place)
+
+most_common
+```
+
+We can now pull out the "number" as a vector. Quite proud of myself for flipping it round to get the least common version: a little modulo math gets us there. Finally, we can make a vector of the powers of two and matrix multiply to get the relevant rate values.
+
+- Shoutout to Paul Rubin for [a helpful post on binary/integer conversion in R](https://spartanideas.msu.edu/2019/02/21/binary-integer-conversion-in-r/). Creating vectors with a sliced exponent and matrix multiplying was super useful.
+
+```{r message=FALSE}
+# extract the binary number from df
+binary_most_common <- most_common %>% 
+  pull(num)
+
+# I felt smart doing this :)
+binary_least_common <- (binary_most_common + 1) %% 2
+
+# Paul Rubin had a super helpful blog post on matrix multiplication
+# made things very easy here
+powers_of_two <- rev(2 ^ (0:11))
+
+gamma <- binary_most_common %*% powers_of_two
+epsilon <- binary_least_common %*% powers_of_two
+
+gamma * epsilon
+```
+
+
+## Part 2
+
+![](https://media.giphy.com/media/l41Ym49ppcDP6iY3C/giphy.gif)
+
+This one destroyed me for a bit because I had trouble making a dplyr function that would work. I've talked with other people with similar troubles, passing variable names to be used in a function. I find this all really dumb and unintuitive: enquo, quoting, masking, using variable names, etc. It's kind of a mess. Feels like it should be simpler to make your own dplyr functions for chaining things grammatically.
+
+I reuse the code from part one to find the most common values. The challenge was the column names from separating the string were numbers, basically the worst case when trying to use them in a function. In this case, I change the column names to be strings, then can filter on them programmatically before resetting the names back to normal.
+
+Turned out `!!sym(col)` worked, casting the string as a symbol to use it as a filter column name. However, I can't turn numbers into symbols, so I had to convert the place number to a temp string.
+
+```{r message=FALSE}
+# find the counts for a given type
+# either oxygen or co2 (most or least common)
+find_common <- function(df, type) {
+  df %>% 
+    pivot_longer(cols = everything(), names_to = "place", values_to = "num") %>% 
+    mutate(place = as.numeric(place)) %>% 
+    group_by(place, num) %>% 
+    summarise(total = n()) %>% 
+    group_by(place) %>% 
+    filter(total == ifelse(type == 0, min(total), max(total))) %>% 
+    arrange(place)
+} 
+
+# filter for a given place, using 
+# tie_value to distinguish ox or co2
+filter_place <- function(df, place, tie_value) {
+
+  # get current stats for filtered values
+  check_df <- find_common(df, type = tie_value)
+  
+  # rename the columns from numbers to strings
+  # otherwise passing values led to trouble
+  col = paste0("X", place)
+  raw <- df %>%
+    set_names(paste0('X', names(.)))
+
+  # check if the place has a tie,
+  # the group sizes of 1s and 0s will be
+  # identical (equal one)
+  group_sizes <- raw %>% 
+    count(!!sym(col)) %>% 
+    pull(n) %>% 
+    unique() %>% 
+    length()
+  
+  # either follow tie rules
+  # or filter based on common stats
+  if (group_sizes == 1) {
+    raw %>%
+      filter(!!sym(col) == tie_value) %>%
+      set_names(seq(1,length(names(.))))
+  } else {
+    raw %>%
+      filter(!!sym(col) == check_df[[place, "num"]]) %>%
+      set_names(seq(1,length(names(.))))
+  }
+  
+}
+```
+
+Now we can filter a bunch. There are certainly better ways to do this (like what? let me know on [Twitter](https://twitter.com/zachbogart)), but this copy-paste worked. Then can unnest the row and do the binary conversion like before.
+
+```{r}
+# filter till we get to one row for each one
+
+binary_ox_gen <- data %>% 
+  filter_place(place = 1, tie_value = 1) %>% 
+  filter_place(place = 2, tie_value = 1) %>% 
+  filter_place(place = 3, tie_value = 1) %>% 
+  filter_place(place = 4, tie_value = 1) %>% 
+  filter_place(place = 5, tie_value = 1) %>% 
+  filter_place(place = 6, tie_value = 1) %>% 
+  filter_place(place = 7, tie_value = 1) %>% 
+  filter_place(place = 8, tie_value = 1) %>% 
+  filter_place(place = 9, tie_value = 1) %>% 
+  filter_place(place = 10, tie_value = 1) %>% 
+  filter_place(place = 11, tie_value = 1) %>% 
+  filter_place(place = 12, tie_value = 1) %>% 
+  unlist(use.names = FALSE)
+
+binary_co2_scrub <- data %>% 
+  filter_place(place = 1, tie_value = 0) %>% 
+  filter_place(place = 2, tie_value = 0) %>% 
+  filter_place(place = 3, tie_value = 0) %>% 
+  filter_place(place = 4, tie_value = 0) %>% 
+  filter_place(place = 5, tie_value = 0) %>% 
+  filter_place(place = 6, tie_value = 0) %>% 
+  filter_place(place = 7, tie_value = 0) %>% 
+  filter_place(place = 8, tie_value = 0) %>% 
+  unlist(use.names = FALSE)
+```
+
+```{r}
+# get the numbers and multiply
+ox_gen_rating <- binary_ox_gen %*% powers_of_two
+co2_scrub_rating <- binary_co2_scrub %*% powers_of_two
+
+ox_gen_rating * co2_scrub_rating
+```
+
+Phew! That was a lot. Hope you learned something!
+
+How would you do it? What's your shortcut? Please [share](https://twitter.com/zachbogart)!
+
+Till next time!
+
+![](https://media.giphy.com/media/lLkKpUBx8K6be/giphy.gif)

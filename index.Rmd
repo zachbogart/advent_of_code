@@ -1,0 +1,24 @@
+---
+title: "Advent of Code"
+author: "Zach Bogart"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(emo)
+```
+
+
+Solving [Advent of Code](https://adventofcode.com/) problems. Tis the season.
+
+- [2021](2021/)
+
+---
+
+[zachbogart.com]("https://zachbogart.com/")
+
+`r emo::ji("christmas_tree")`

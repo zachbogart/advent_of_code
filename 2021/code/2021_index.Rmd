@@ -18,7 +18,7 @@ rmarkdown::render(input = here("2021/code", "2021_index.Rmd"),
                   output_file = "index.html")
 ```
 
-- [Back to Main](/)
+- [Back to Main](/advent_of_code/)
 
 ## Days
 

@@ -1,0 +1,103 @@
+---
+author: "Zach Bogart"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+```{r include=FALSE, eval=FALSE}
+# run this chunk to render
+day <- 4
+day_title <- "Giant Squid"
+
+day_str <- stringr::str_pad(day, 2, pad = "0")
+rmarkdown::render(input = paste0("2021/code/", day_str, ".Rmd"), 
+                  output_dir = paste0("2021/", day),
+                  output_file = "index.html")
+```
+
+---
+title: "`r paste0("AoC 2021: Day ", day)`"
+---
+
+# Day `r day`: `r day_title`
+
+[Click for Problem Statement](`r paste0("https://adventofcode.com/2021/day/", day)`)
+
+[Back to 2021](/advent_of_code/2021/)
+
+---
+
+```{r message=FALSE}
+library(tidyverse)
+library(here)
+```
+
+```{r}
+path_data <- here("2021/inputs/04-input.txt")
+input <- tibble(x = read_lines(path_data))
+```
+
+
+## Part 1
+
+### Getting the Boards
+
+```{r}
+# get vector of the drawing numbers
+draw_numbers <- input[[1, "x"]] %>% str_split(pattern = ",")
+draw_numbers <- as.numeric(draw_numbers[[1]])
+
+# could convert the boards into vectors and define tests for each type
+
+# just the board input section, no delimiters
+raw <- 
+  input %>% 
+  slice(3:nrow(.)) %>% 
+  filter(x != "")
+
+# df of raw board strings
+raw_board <- raw %>%   
+  # count boards
+  mutate(board = (row_number() - 1) %/% 5) %>% 
+  # for each board
+  group_by(board) %>% 
+  # make each number two chars
+  mutate(board_string = paste(x, collapse = " ")) %>% 
+  mutate(board_string = str_replace_all(board_string, "  ", " 0"),
+         board_string = str_replace_all(board_string, "^ ([0-9])", "\\1")) %>% 
+  # unique board strings
+  select(-x) %>% 
+  distinct()
+
+# df of all boards
+boards <- raw_board %>% 
+  # split up the baord strings
+  separate(board_string, sep = " ", into = as.character(seq(1, 25))) %>% 
+  # pivot, baby!
+  pivot_longer(cols = -board, names_to = "place", values_to = "num") %>% 
+  # tough to parse with all the parens, but a lovely trick!
+  mutate(across(where(is.character), as.numeric)) %>% 
+  # zero index number places
+  mutate(place = place - 1) 
+
+boards
+```
+
+### TODO: Testing Bingo's
+
+```{r}
+# what the baord looks like
+matrix(0:24, nrow = 5, byrow = TRUE)
+```
+
+```{r}
+test_board <- boards %>% 
+  filter(board == 0)
+
+test_board
+```
+

@@ -22,7 +22,7 @@ rmarkdown::render(input = here("2021/code", "2021_index.Rmd"),
 - [Day 1](1/)
 - [Day 2](2/)
 - [Day 3](3/)
-<!-- - [Day 4](4/) -->
+- [Day 4](4/)
 <!-- - [Day 5](5/) -->
 <!-- - [Day 6](6/) -->
 <!-- - [Day 7](7/) -->

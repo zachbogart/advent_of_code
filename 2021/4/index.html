@@ -183,6 +183,8 @@ library(here)</code></pre>
 input &lt;- tibble(x = read_lines(path_data))</code></pre>
 <div id="part-1" class="section level2">
 <h2>Part 1</h2>
+<div id="getting-the-boards" class="section level3">
+<h3>Getting the Boards</h3>
 <pre class="r"><code># get vector of the drawing numbers
 draw_numbers &lt;- input[[1, &quot;x&quot;]] %&gt;% str_split(pattern = &quot;,&quot;)
 draw_numbers &lt;- as.numeric(draw_numbers[[1]])
@@ -236,6 +238,9 @@ boards</code></pre>
 ##  9     0     8    69
 ## 10     0     9    33
 ## # … with 2,490 more rows</code></pre>
+</div>
+<div id="todo-testing-bingos" class="section level3">
+<h3>TODO: Testing Bingo’s</h3>
 <pre class="r"><code># what the baord looks like
 matrix(0:24, nrow = 5, byrow = TRUE)</code></pre>
 <pre><code>##      [,1] [,2] [,3] [,4] [,5]
@@ -245,7 +250,25 @@ matrix(0:24, nrow = 5, byrow = TRUE)</code></pre>
 ## [4,]   15   16   17   18   19
 ## [5,]   20   21   22   23   24</code></pre>
 <pre class="r"><code>test_board &lt;- boards %&gt;% 
-  filter(board == 0)</code></pre>
+  filter(board == 0)
+
+test_board</code></pre>
+<pre><code>## # A tibble: 25 × 3
+## # Groups:   board [1]
+##    board place   num
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1     0     0    31
+##  2     0     1    93
+##  3     0     2    46
+##  4     0     3    11
+##  5     0     4    30
+##  6     0     5     2
+##  7     0     6    45
+##  8     0     7    40
+##  9     0     8    69
+## 10     0     9    33
+## # … with 15 more rows</code></pre>
+</div>
 </div>
 </div>
 

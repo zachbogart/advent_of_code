@@ -41,10 +41,7 @@ library(here)
 ```
 
 ```{r}
-path_data <- here("2021/inputs/05-input.txt")
-input <- tibble(x = read_lines(path_data))
-
-# testing
+# for testing
 # input = tibble(x = read_lines(
 #   "0,9 -> 5,9
 # 8,0 -> 0,8
@@ -56,33 +53,60 @@ input <- tibble(x = read_lines(path_data))
 # 3,4 -> 1,4
 # 0,0 -> 8,8
 # 5,5 -> 8,2"))
+
+path_data <- here("2021/inputs/05-input.txt")
+input <- tibble(x = read_lines(path_data))
 ```
 
-## Part 1
+We're drawing lines underwater to dodge some underwater dangers. Let's go...
+
+![](https://media.giphy.com/media/xT5LMTeDyy3eBi6k5G/giphy.gif)
+
+## Setup
+
+Before we can count the overlaps, we need to make the data all friendly. We can do a bunch of separations to split up the lines, finally getting a dataframe where each row is one line, start point and end point.
 
 ```{r}
+# just keep splitting, just keep splitting...
 points <- input %>% 
   separate(x, into = c("p1", "p2"), sep = " -> ") %>% 
   separate(p1, into = c("x1", "y1"), sep = ",") %>% 
   separate(p2, into = c("x2", "y2"), sep = ",") %>% 
   mutate(across(where(is.character), as.numeric))
+
+points
 ```
 
+## Part 1
+
+For the first part, we only care about horizontal and vertical lines. So we can:
+
+- tackle each line type separately
+- filter out for specific line
+- In each case, one of the dimensions can be reduced to a single value, while the other has a min and max value
+- We can then find the difference between the two extremes
+
 ```{r}
-# only consider horiz and vertical lines
+# only consider horizontal and vertical lines
 
 lines_v <- points %>% 
+  # filter and clean
   filter(x1 == x2) %>% 
   select(-x2) %>% 
   rename(x = x1) %>% 
+  # by row, find extremes
   rowwise() %>% 
   mutate(ymin = min(y1,y2),
          ymax = max(y1,y2)) %>% 
+  # you've done your job
   select(-c(y1, y2)) %>% 
+  # find diff for interim points
   mutate(diff = ymax - ymin + 1) %>% 
   ungroup() %>% 
+  # label each line
   mutate(line = row_number(), .before = x)
 
+# same for horizontal, but swap a bunch of X's and Y's
 lines_h <- points %>% 
   filter(y1 == y2) %>% 
   select(-y2) %>% 
@@ -95,19 +119,33 @@ lines_h <- points %>%
   ungroup() %>% 
   mutate(line = row_number(), .before = y)
 
-
+# example of horizontal lines
+lines_h
 ```
 
+Now we want to expand each line, making a dataframe that adds in all of the interim points. We can use `uncount`, which is awesome!
+
+- repeat the rows with uncount by the `diff`
+- for each line, find the increment for interim points
+- create the interim points and tidy up
+
 ```{r}
+# make the lines into sets of points
+
 vert_line_points <- lines_v %>% 
+  # uncount, super awesome!
   uncount(diff) %>% 
+  # for each line, create increment
   group_by(line) %>% 
   mutate(increment = row_number() - 1) %>% 
   ungroup() %>% 
+  # create the interim points
   mutate(y = ymin + increment) %>% 
+  # tidy up
   mutate(type = "vertical") %>% 
   select(type, line, x, y)
 
+# same for horizontal
 horiz_line_points <- lines_h %>% 
   uncount(diff) %>% 
   group_by(line) %>% 
@@ -116,23 +154,42 @@ horiz_line_points <- lines_h %>%
   mutate(x = xmin + increment) %>% 
   mutate(type = "horizontal") %>% 
   select(type, line, x, y)
+
+# example of all vertical points
+vert_line_points
 ```
+
+Now we can find all of the overlaps! We can combine the two dataframes of points and look for x/y pairs that repeat. If any repeat two or more times, we count them.
 
 ```{r}
+# combine points
 all_points <- bind_rows(horiz_line_points, vert_line_points)
 
-all_points %>% 
+# find large overlaps
+overlaps_p1 <- all_points %>% 
   count(x,y, sort = TRUE, name = "overlaps") %>% 
   filter(overlaps >= 2)
+
+overlaps_p1
 ```
 
-## TODO: Part 2
+We see we have `r dim(overlaps_p1)[1]` rows. But now we need to include diagonals...
 
-Add in the diagonals. Need to take the slope into account when creating interim points. Too tired, will try tomorrow when I'm more well rested. Zzz...
+## Part 2
+
+Note to myself late at night:
+
+> Add in the diagonals. Need to take the slope into account when creating interim points. Have everything setup. Too tired, will try tomorrow when I'm more well rested. Zzz...
+
+Tried to do this late at night, but was too tired to think straight. Was much clearer in the morning and I had everything mise en place for myself!
+
+For the diagonal lines, we need to alter our method a bit to deal with each type of diagonal. We can make the dataframe of lines like before, but we will add in a slope term to distinguish each diagonal type.
 
 ```{r}
 lines_d <- points %>% 
+  # the one's that aren't horizontal
   filter(!(x1 == x2 | y1 == y2)) %>% 
+  # by row, find extremes and interim differences
   rowwise() %>% 
   mutate(xmin = min(x1,x2),
          xmax = max(x1,x2),
@@ -140,12 +197,65 @@ lines_d <- points %>%
          ymax = max(y1,y2)) %>% 
   mutate(diff = xmax - xmin + 1) %>% 
   ungroup() %>% 
+  # label lines
   mutate(line = row_number(), .before = x1) %>% 
-  mutate(slope = (y2-y1) / (x2-x1))
+  # add in the slope for orientation
+  mutate(slope = (y2-y1) / (x2-x1)) %>% 
+  # you've done your job
+  select(-c(x1, x2, y1, y2))
+
+lines_d
 ```
+
+Now when we add in the interim points, we just need to check the slope. From our perspective, the y value is always increasing, so we can add the increment like above. For the x value, we just check the slope and either start at the min value and add or the max value and subtract. And since the diagonals are always 45 degrees, we can increment/decrement by one each time. Tada!
 
 ```{r}
-lines_d
+# same as above, but check diagonal
+diag_line_points <- lines_d %>% 
+  uncount(diff) %>% 
+  group_by(line) %>% 
+  mutate(increment = row_number() - 1) %>% 
+  ungroup() %>% 
+  mutate(y = ymin + increment) %>% 
+  # left or right diagonal
+  mutate(x = ifelse(
+    slope > 0,
+    xmin + increment,
+    xmax - increment
+  )) %>% 
+  # tidy up
+  mutate(type = "diagonal") %>% 
+  select(type, line, x, y)
 
+diag_line_points
 ```
 
+And then tack on the diagonals and check for large overlaps:
+
+```{r}
+# with diagonals
+all_points2 <- bind_rows(
+  horiz_line_points, 
+  vert_line_points,
+  diag_line_points
+)
+
+# overlaps with diagonals
+overlaps_p2 <- all_points2 %>% 
+  count(x,y, sort = TRUE, name = "overlaps") %>% 
+  filter(overlaps >= 2)
+
+overlaps_p2
+```
+
+We see we have `r dim(overlaps_p2)[1]` rows.
+
+## All Done!
+
+And there we go! All overlaps accounted for. Hope you learned something!
+
+How would you do it? What's your shortcut? Please [share](https://twitter.com/zachbogart)!
+
+Till next time!
+
+![](https://media.giphy.com/media/56fvso6gsIo7e/giphy.gif)

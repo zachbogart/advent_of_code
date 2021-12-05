@@ -31,6 +31,11 @@ title: "`r paste0("AoC 2021: Day ", day)`"
 
 ---
 
+```{r include=FALSE}
+library(emo)
+```
+
+
 ```{r message=FALSE}
 library(tidyverse)
 library(here)
@@ -41,17 +46,36 @@ path_data <- here("2021/inputs/04-input.txt")
 input <- tibble(x = read_lines(path_data))
 ```
 
+In this one we're playing bingo with a giant squid, and we're going to do it with dataframes! Let's go...
+
+![](https://media.giphy.com/media/gSJfzjAfRUCly/giphy.gif)
 
 ## Part 1
 
-### Getting the Boards
+We need to essentially play bingo, find the first board that wins, and then do some fancy calculations on the winning board. So, we need to first get the boards organized. This turns out to be the toughest part.
+
+### Unpacking the Input
+
+The input provides us with both the list of numbers drawn and the bingo boards, so we need to separate those. 
+
+First the numbers to draw: we can take the first row of input and split it up and convert into numbers. There: a nice vector of drawn numbers.
 
 ```{r}
 # get vector of the drawing numbers
 draw_numbers <- input[[1, "x"]] %>% str_split(pattern = ",")
 draw_numbers <- as.numeric(draw_numbers[[1]])
 
-# could convert the boards into vectors and define tests for each type
+draw_numbers
+```
+
+Now we can tackle the boards. We will:
+
+- Get the boards from the input, removing the empty strings
+- Since all boards are the same size, we can make a column to count the boards and then make each row one board
+- Let's also clean up the strings, making every number two characters 
+
+```{r}
+# let's convert the boards into vectors and define tests for each type
 
 # just the board input section, no delimiters
 raw <- 
@@ -60,7 +84,7 @@ raw <-
   filter(x != "")
 
 # df of raw board strings
-raw_board <- raw %>%   
+raw_boards <- raw %>%   
   # count boards
   mutate(board = (row_number() - 1) %/% 5) %>% 
   # for each board
@@ -73,9 +97,25 @@ raw_board <- raw %>%
   select(-x) %>% 
   distinct()
 
+raw_boards
+```
+
+Now we can convert these strings into a dataframe of boards. We want a tidy representation of them, meaning:
+
+- board
+- place_on_board
+- number_at_that_place
+
+We can get there from our raw strings:
+
+- Separate each board string into twenty-five columns, split by spaces
+- Pivot the result to get long version like we want
+- Do some fiddling: convert to numbers and zero-index the place values
+
+```{r}
 # df of all boards
-boards <- raw_board %>% 
-  # split up the baord strings
+boards <- raw_boards %>% 
+  # split up the board strings
   separate(board_string, sep = " ", into = as.character(seq(1, 25))) %>% 
   # pivot, baby!
   pivot_longer(cols = -board, names_to = "place", values_to = "num") %>% 
@@ -87,17 +127,206 @@ boards <- raw_board %>%
 boards
 ```
 
-### TODO: Testing Bingo's
+We now have a dataframe of all boards, with every number and where they go. Sweeeeet. Let's play bingo!
+
+Hang on...
+
+### Getting the Game Ready
+
+Here's what our board layout looks like:
 
 ```{r}
-# what the baord looks like
-matrix(0:24, nrow = 5, byrow = TRUE)
-```
-
-```{r}
-test_board <- boards %>% 
-  filter(board == 0)
-
+# what a board looks like, numbers are places
+test_board <- matrix(0:24, nrow = 5, byrow = TRUE)
 test_board
 ```
 
+To check for a bingo, we need to track whether a number is marked and whether someone has won. First, we should add to our `boards` dataframe to specify which row and column each number is a part of. Which means...math shows up!
+
+From the test board above, we can use the place values to define what each row and column are:
+
+- Each **row** is the numbers one to twenty-five, chunked by fives. So we can do a floor division to get that.
+- Each **column** is some starting value, then increase by steps of five. We can use modulo to get this.
+
+And we will set all of the boards to have no marks. Our bingo game is now setup.
+
+```{r}
+# setup bingo df
+bingo <- boards %>% 
+  mutate(row = place %/% 5,
+         col = place %% 5,
+         marked = FALSE)
+
+bingo
+```
+
+### Playing Bingo
+
+Now we need to take our bingo setup and play! But we will need a way to check if anyone has won. To do this, we can group by each board and count the number of marked values on each board, for all rows and all columns. If any total ever hits five, we know someone has won.
+
+```{r}
+get_totals <- function(df) {
+  # total for the rows
+  rows <- df %>% 
+    group_by(board, row) %>% 
+    summarise(total = sum(marked)) %>% 
+    ungroup() %>% 
+    select(-row) %>% 
+    mutate(type = "row")
+
+  # total for the columns
+  cols <- df %>% 
+    group_by(board, col) %>% 
+    summarise(total = sum(marked)) %>% 
+    ungroup() %>% 
+    select(-col) %>% 
+    mutate(type = "col")
+
+  # combine
+  totals <- bind_rows(rows, cols) %>% 
+    select(board, type, total)
+  
+  return(totals)
+}
+```
+
+To play the game, we can loop through a selection of numbers (our "basket" of numbers), updating our bingo dataframe each time. Once all numbers are drawn, we can find use the results to find the totals and see the status of the game.
+
+```{r}
+play_bingo <- function(number_basket) {
+  # start fresh
+  curr_bingo <- bingo
+  
+  # if you have the number, mark it, otherwise leave it
+  for (draw_num in number_basket) {
+    curr_bingo <- curr_bingo %>% 
+      mutate(marked = ifelse(num == draw_num, TRUE, marked))
+  }
+  
+  return(curr_bingo)
+}
+```
+
+Phew, okay. Let's finally play some bingo!
+
+## Part 1 (no really)
+
+### Find First Winner
+
+We will keep playing bingo with more and more numbers till someone wins (we see a five in our totals)
+
+```{r}
+# an example of playing bingo, no one has won yet (no 5s under total)
+play_bingo(draw_numbers[1:12]) %>% 
+  get_totals() %>% 
+  arrange(desc(total))
+```
+
+But as soon we draw the 23rd number...BINGO!
+
+```{r}
+# congrats, you won!
+play_bingo(draw_numbers[1:23]) %>% 
+  get_totals() %>% 
+  arrange(desc(total)) %>% 
+  head(3)
+```
+
+And it's board 79! Let's tally their score!
+
+### Get the Score
+
+Let's get the results of board 79 after they have won:
+
+```{r}
+# winning board is 79
+winning_board_1 <- play_bingo(draw_numbers[1:23]) %>% 
+  filter(board == 79)
+```
+
+To get the score, we:
+
+- Sum all of the unmarked numbers (`marked == FALSE`)
+- Multiply the result by the number that was just called (the 23rd number)
+
+```{r}
+# calculating score
+
+# sum of all unmarked numbers
+winning_unmarked_sum_1 <- winning_board_1 %>% 
+  filter(!marked) %>% 
+  summarise(total = sum(num)) %>% 
+  pull(total)
+# number that was just called
+just_called_1 <- draw_numbers[23]
+
+# final score
+winning_unmarked_sum_1 * just_called_1
+```
+
+Well played! But what if we play the long game?
+
+## Part 2
+
+Now we want to know the board that is the **last** to win. Same idea, but we will add a filter to just look for the boards that haven't won yet. As soon as we are left with just one board (in this case, ten rows of totals), we have the last player.
+
+```{r}
+# an example of playing bingo, checking for players still in the game
+# Notice the dimensions: we will fiddle till we only have ten rows (one board)
+play_bingo(draw_numbers[1:60]) %>% 
+  get_totals() %>% 
+  arrange(desc(total)) %>% 
+  group_by(board) %>% 
+  filter(all(total < 5))
+```
+
+And after the 83rd number is drawn, there is only one player remaining:
+
+```{r}
+# earliest number drawn to return only one board
+play_bingo(draw_numbers[1:83]) %>% 
+  get_totals() %>% 
+  arrange(desc(total)) %>% 
+  group_by(board) %>% 
+  filter(all(total < 5))
+```
+
+So board 32 is the last one still in the game. Let's let them win already! With the 84th number they are still playing, but once we draw the 85th number, they finally get a bingo. So now we take their winning board:
+
+```{r}
+# get 32's winning board
+winning_board_2 <- play_bingo(draw_numbers[1:85]) %>% 
+  filter(board == 32)
+winning_board_2
+```
+
+And figure out their score:
+
+```{r}
+# calculate score
+
+# sum of all unmarked numbers
+winning_unmarked_sum_2 <- winning_board_2 %>% 
+  filter(!marked) %>% 
+  summarise(total = sum(num)) %>% 
+  pull(total)
+# number that was just called
+just_called_2 <- draw_numbers[85]
+
+# final score
+winning_unmarked_sum_2 * just_called_2
+```
+
+And there we go! We have played bingo with a giant squid!
+
+`r emo::ji("squid")`
+
+## All Done!
+
+Phew! That was a lot. Hope you learned something!
+
+How would you do it? What's your shortcut? Please [share](https://twitter.com/zachbogart)!
+
+Till next time!
+
+![](https://media.giphy.com/media/32rVDqpmBn47C/giphy.gif)

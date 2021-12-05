@@ -50,6 +50,6 @@ rmarkdown::render(input = here("2021/code", "2021_index.Rmd"),
 
 ---
 
-[zachbogart.com]("https://zachbogart.com/")
+[zachbogart.com](https://zachbogart.com/)
 
 `r emo::ji("christmas_tree")`

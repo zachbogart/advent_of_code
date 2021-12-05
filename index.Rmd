@@ -19,6 +19,6 @@ Solving [Advent of Code](https://adventofcode.com/) problems. Tis the season.
 
 ---
 
-[zachbogart.com]("https://zachbogart.com/")
+[zachbogart.com](https://zachbogart.com/)
 
 `r emo::ji("christmas_tree")`

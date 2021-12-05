@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 ```{r include=FALSE, eval=FALSE}
 # run this chunk to render
 day <- 5
-day_title <- "TODO"
+day_title <- "Hydrothermal Venture"
 
 day_str <- stringr::str_pad(day, 2, pad = "0")
 rmarkdown::render(input = paste0("2021/code/", day_str, ".Rmd"), 
@@ -41,13 +41,111 @@ library(here)
 ```
 
 ```{r}
-path_data <- here("2021/inputs/04-input.txt")
+path_data <- here("2021/inputs/05-input.txt")
 input <- tibble(x = read_lines(path_data))
+
+# testing
+# input = tibble(x = read_lines(
+#   "0,9 -> 5,9
+# 8,0 -> 0,8
+# 9,4 -> 3,4
+# 2,2 -> 2,1
+# 7,0 -> 7,4
+# 6,4 -> 2,0
+# 0,9 -> 2,9
+# 3,4 -> 1,4
+# 0,0 -> 8,8
+# 5,5 -> 8,2"))
 ```
 
 ## Part 1
 
 ```{r}
+points <- input %>% 
+  separate(x, into = c("p1", "p2"), sep = " -> ") %>% 
+  separate(p1, into = c("x1", "y1"), sep = ",") %>% 
+  separate(p2, into = c("x2", "y2"), sep = ",") %>% 
+  mutate(across(where(is.character), as.numeric))
+```
+
+```{r}
+# only consider horiz and vertical lines
+
+lines_v <- points %>% 
+  filter(x1 == x2) %>% 
+  select(-x2) %>% 
+  rename(x = x1) %>% 
+  rowwise() %>% 
+  mutate(ymin = min(y1,y2),
+         ymax = max(y1,y2)) %>% 
+  select(-c(y1, y2)) %>% 
+  mutate(diff = ymax - ymin + 1) %>% 
+  ungroup() %>% 
+  mutate(line = row_number(), .before = x)
+
+lines_h <- points %>% 
+  filter(y1 == y2) %>% 
+  select(-y2) %>% 
+  rename(y = y1) %>% 
+  rowwise() %>% 
+  mutate(xmin = min(x1,x2),
+         xmax = max(x1,x2)) %>% 
+  select(-c(x1, x2)) %>% 
+  mutate(diff = xmax - xmin + 1) %>% 
+  ungroup() %>% 
+  mutate(line = row_number(), .before = y)
+
+
+```
+
+```{r}
+vert_line_points <- lines_v %>% 
+  uncount(diff) %>% 
+  group_by(line) %>% 
+  mutate(increment = row_number() - 1) %>% 
+  ungroup() %>% 
+  mutate(y = ymin + increment) %>% 
+  mutate(type = "vertical") %>% 
+  select(type, line, x, y)
+
+horiz_line_points <- lines_h %>% 
+  uncount(diff) %>% 
+  group_by(line) %>% 
+  mutate(increment = row_number() - 1) %>% 
+  ungroup() %>% 
+  mutate(x = xmin + increment) %>% 
+  mutate(type = "horizontal") %>% 
+  select(type, line, x, y)
+```
+
+```{r}
+all_points <- bind_rows(horiz_line_points, vert_line_points)
+
+all_points %>% 
+  count(x,y, sort = TRUE, name = "overlaps") %>% 
+  filter(overlaps >= 2)
+```
+
+## TODO: Part 2
+
+Add in the diagonals. Need to take the slope into account when creating interim points. Too tired, will try tomorrow when I'm more well rested. Zzz...
+
+```{r}
+lines_d <- points %>% 
+  filter(!(x1 == x2 | y1 == y2)) %>% 
+  rowwise() %>% 
+  mutate(xmin = min(x1,x2),
+         xmax = max(x1,x2),
+         ymin = min(y1,y2),
+         ymax = max(y1,y2)) %>% 
+  mutate(diff = xmax - xmin + 1) %>% 
+  ungroup() %>% 
+  mutate(line = row_number(), .before = x1) %>% 
+  mutate(slope = (y2-y1) / (x2-x1))
+```
+
+```{r}
+lines_d
 
 ```
 

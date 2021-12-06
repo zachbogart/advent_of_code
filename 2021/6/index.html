@@ -188,13 +188,16 @@ input &lt;- tibble(x = read_lines(path_data))</code></pre>
 fish &lt;-  as.numeric(raw[[1]])
 
 fish</code></pre>
-<pre><code>##   [1] 2 5 2 3 5 3 5 5 4 2 1 5 5 5 5 1 2 5 1 1 1 1 1 5 5 1 5 4 3 3 1 2 4 2 4 5 4 5 5 5 4 4 1 3 5
-##  [46] 1 2 2 4 2 1 1 2 1 1 4 2 1 2 1 2 1 3 3 3 5 1 1 1 3 4 4 1 3 1 5 5 1 5 3 1 5 2 2 2 2 1 1 1 1
-##  [91] 3 3 3 1 4 3 5 3 5 5 1 4 4 2 5 1 5 5 4 5 5 1 5 4 4 1 3 4 1 2 3 2 5 1 3 1 5 5 2 2 2 1 3 3 1
-## [136] 1 1 4 2 5 1 2 4 4 2 5 1 1 3 5 4 2 1 2 5 4 1 5 5 2 4 3 5 2 4 1 4 3 5 5 3 1 5 1 3 5 1 1 1 4
-## [181] 2 4 4 1 1 1 1 1 3 4 5 2 3 4 5 1 4 1 2 3 4 2 1 4 4 2 1 5 3 4 1 1 2 2 1 5 5 2 5 1 4 4 2 1 3
-## [226] 1 5 5 1 4 2 2 1 1 1 5 1 3 4 1 3 3 5 3 5 5 3 1 4 4 1 1 1 3 3 2 3 1 1 1 5 4 2 5 3 5 4 4 5 2
-## [271] 3 2 5 2 1 1 1 2 1 5 3 5 1 4 1 2 1 5 3 5 2 1 3 1 2 4 5 3 4 3</code></pre>
+<pre><code>##   [1] 2 5 2 3 5 3 5 5 4 2 1 5 5 5 5 1 2 5 1 1 1 1 1 5 5 1 5 4 3 3 1 2 4 2 4 5 4 5 5 5 4 4 1 3
+##  [45] 5 1 2 2 4 2 1 1 2 1 1 4 2 1 2 1 2 1 3 3 3 5 1 1 1 3 4 4 1 3 1 5 5 1 5 3 1 5 2 2 2 2 1 1
+##  [89] 1 1 3 3 3 1 4 3 5 3 5 5 1 4 4 2 5 1 5 5 4 5 5 1 5 4 4 1 3 4 1 2 3 2 5 1 3 1 5 5 2 2 2 1
+## [133] 3 3 1 1 1 4 2 5 1 2 4 4 2 5 1 1 3 5 4 2 1 2 5 4 1 5 5 2 4 3 5 2 4 1 4 3 5 5 3 1 5 1 3 5
+## [177] 1 1 1 4 2 4 4 1 1 1 1 1 3 4 5 2 3 4 5 1 4 1 2 3 4 2 1 4 4 2 1 5 3 4 1 1 2 2 1 5 5 2 5 1
+## [221] 4 4 2 1 3 1 5 5 1 4 2 2 1 1 1 5 1 3 4 1 3 3 5 3 5 5 3 1 4 4 1 1 1 3 3 2 3 1 1 1 5 4 2 5
+## [265] 3 5 4 4 5 2 3 2 5 2 1 1 1 2 1 5 3 5 1 4 1 2 1 5 3 5 2 1 3 1 2 4 5 3 4 3</code></pre>
+<div id="part-1" class="section level2">
+<h2>Part 1</h2>
+<p>Do it by adding to a vector. Will come back to bite us later.</p>
 <pre class="r"><code># decrement the fish
 # check for negatives
 # reset negatives and add that many new fish
@@ -215,8 +218,10 @@ for (i in seq(80)) {
 
 length(fish_status)</code></pre>
 <pre><code>## [1] 350605</code></pre>
+</div>
 <div id="part-2" class="section level2">
 <h2>Part 2</h2>
+<p>Adding to a vector wont work here. Make a dictionary of sorts and update it.</p>
 <pre class="r"><code>one_day_better &lt;- function(df) {
   df %&gt;% mutate(
     coming_soon = num_0,
@@ -237,9 +242,8 @@ length(fish_status)</code></pre>
 }
 
 blank &lt;- tibble(x = c(paste(&quot;num&quot;, seq(0, 8), sep = &quot;_&quot;), &quot;coming_soon&quot;), value = 0) %&gt;% 
-  pivot_wider(names_from = x, values_from = value)
-
-tibble(fish) %&gt;% 
+  pivot_wider(names_from = x, values_from = value)</code></pre>
+<pre class="r"><code>tibble(fish) %&gt;% 
   count(fish)</code></pre>
 <pre><code>## # A tibble: 5 × 2
 ##    fish     n

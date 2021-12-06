@@ -55,6 +55,10 @@ fish <-  as.numeric(raw[[1]])
 fish
 ```
 
+## Part 1
+
+Do it by adding to a vector. Will come back to bite us later.
+
 ```{r}
 # decrement the fish
 # check for negatives
@@ -80,6 +84,8 @@ length(fish_status)
 
 ## Part 2
 
+Adding to a vector wont work here. Make a dictionary of sorts and update it.
+
 ```{r}
 one_day_better <- function(df) {
   df %>% mutate(
@@ -102,10 +108,15 @@ one_day_better <- function(df) {
 
 blank <- tibble(x = c(paste("num", seq(0, 8), sep = "_"), "coming_soon"), value = 0) %>% 
   pivot_wider(names_from = x, values_from = value)
+```
 
+```{r}
 tibble(fish) %>% 
   count(fish)
+```
 
+
+```{r}
 start <- blank %>% 
   mutate(
     num_1 = 89,
@@ -123,6 +134,5 @@ for (i in seq(256)) {
 fish_status2 %>% 
   pivot_longer(cols = everything()) %>% 
   summarise(total = sum(value))
-
 ```
 

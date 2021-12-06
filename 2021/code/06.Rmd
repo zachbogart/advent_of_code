@@ -1,0 +1,128 @@
+---
+author: "Zach Bogart"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+```{r include=FALSE, eval=FALSE}
+# run this chunk to render
+day <- 6
+day_title <- "Lanternfish"
+
+day_str <- stringr::str_pad(day, 2, pad = "0")
+rmarkdown::render(input = paste0("2021/code/", day_str, ".Rmd"), 
+                  output_dir = paste0("2021/", day),
+                  output_file = "index.html")
+```
+
+---
+title: "`r paste0("AoC 2021: Day ", day)`"
+---
+
+# Day `r day`: `r day_title`
+
+[Click for Problem Statement](`r paste0("https://adventofcode.com/2021/day/", day)`)
+
+[Back to 2021](/advent_of_code/2021/)
+
+---
+
+```{r include=FALSE}
+library(emo)
+```
+
+```{r message=FALSE}
+library(tidyverse)
+library(here)
+```
+
+```{r}
+path_data <- here("2021/inputs/06-input.txt")
+input <- tibble(x = read_lines(path_data))
+```
+
+```{r}
+raw <- input %>% 
+  mutate(x = str_split(x, ",")) %>% 
+  pull(x)
+
+fish <-  as.numeric(raw[[1]])
+
+fish
+```
+
+```{r}
+# decrement the fish
+# check for negatives
+# reset negatives and add that many new fish
+
+one_day <- function(fish) {
+  curr_fish <- fish - 1 # decrement fish by one
+  total_negatives <- sum(curr_fish < 0) # count fish that will make new fish
+  curr_fish <- replace(curr_fish, curr_fish < 0, 6) # reset fish
+  curr_fish <- append(curr_fish, rep(8, total_negatives)) # add new fish
+  
+  return(curr_fish)
+}
+
+fish_status <- fish
+for (i in seq(80)) {
+  fish_status <- one_day(fish_status)
+}
+
+length(fish_status)
+
+```
+
+## Part 2
+
+```{r}
+one_day_better <- function(df) {
+  df %>% mutate(
+    coming_soon = num_0,
+    num_0 = num_1,
+    num_1 = num_2,
+    num_2 = num_3,
+    num_3 = num_4,
+    num_4 = num_5,
+    num_5 = num_6,
+    num_6 = num_7,
+    num_7 = num_8,
+    
+    
+    num_8 = coming_soon,
+    num_6 = num_6 + coming_soon
+  ) %>% 
+    mutate(coming_soon = 0)
+}
+
+blank <- tibble(x = c(paste("num", seq(0, 8), sep = "_"), "coming_soon"), value = 0) %>% 
+  pivot_wider(names_from = x, values_from = value)
+
+tibble(fish) %>% 
+  count(fish)
+
+start <- blank %>% 
+  mutate(
+    num_1 = 89,
+    num_2 = 50,
+    num_3 = 46,
+    num_4 = 48,
+    num_5 = 67
+  )
+
+fish_status2 <- start
+for (i in seq(256)) {
+  fish_status2 <- one_day_better(fish_status2)
+}
+
+fish_status2 %>% 
+  pivot_longer(cols = everything()) %>% 
+  summarise(total = sum(value))
+
+```
+

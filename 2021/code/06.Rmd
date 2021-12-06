@@ -84,7 +84,7 @@ length(fish_status)
 
 ## Part 2
 
-Adding to a vector wont work here. Make a dictionary of sorts and update it.
+Adding to a vector wont work here. Make a dictionary of sorts and update it. 
 
 ```{r}
 one_day_better <- function(df) {

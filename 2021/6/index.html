@@ -11,7 +11,7 @@
 
 <meta name="author" content="Zach Bogart" />
 
-<meta name="date" content="2021-12-05" />
+<meta name="date" content="2021-12-06" />
 
 <title>AoC 2021: Day 6</title>
 
@@ -167,7 +167,7 @@ pre code {
 
 <h1 class="title toc-ignore">AoC 2021: Day 6</h1>
 <h4 class="author">Zach Bogart</h4>
-<h4 class="date">2021-12-05</h4>
+<h4 class="date">2021-12-06</h4>
 
 </div>
 
@@ -222,7 +222,8 @@ length(fish_status)</code></pre>
 <div id="part-2" class="section level2">
 <h2>Part 2</h2>
 <p>Adding to a vector wont work here. Make a dictionary of sorts and update it.</p>
-<pre class="r"><code>one_day_better &lt;- function(df) {
+<pre class="r"><code># use dataframe as a dictionary
+one_day_better &lt;- function(df) {
   df %&gt;% mutate(
     coming_soon = num_0,
     num_0 = num_1,
@@ -241,9 +242,11 @@ length(fish_status)</code></pre>
     mutate(coming_soon = 0)
 }
 
+# make a blank dataframe to start
 blank &lt;- tibble(x = c(paste(&quot;num&quot;, seq(0, 8), sep = &quot;_&quot;), &quot;coming_soon&quot;), value = 0) %&gt;% 
   pivot_wider(names_from = x, values_from = value)</code></pre>
-<pre class="r"><code>tibble(fish) %&gt;% 
+<pre class="r"><code># manually find out the starting values
+tibble(fish) %&gt;% 
   count(fish)</code></pre>
 <pre><code>## # A tibble: 5 × 2
 ##    fish     n
@@ -253,7 +256,8 @@ blank &lt;- tibble(x = c(paste(&quot;num&quot;, seq(0, 8), sep = &quot;_&quot;),
 ## 3     3    46
 ## 4     4    48
 ## 5     5    67</code></pre>
-<pre class="r"><code>start &lt;- blank %&gt;% 
+<pre class="r"><code># update blank to starting conditions
+start &lt;- blank %&gt;% 
   mutate(
     num_1 = 89,
     num_2 = 50,
@@ -262,11 +266,13 @@ blank &lt;- tibble(x = c(paste(&quot;num&quot;, seq(0, 8), sep = &quot;_&quot;),
     num_5 = 67
   )
 
+# make bunches of lanternfish!
 fish_status2 &lt;- start
 for (i in seq(256)) {
   fish_status2 &lt;- one_day_better(fish_status2)
 }
 
+# add up the big lanternfish population!
 fish_status2 %&gt;% 
   pivot_longer(cols = everything()) %&gt;% 
   summarise(total = sum(value))</code></pre>
@@ -274,6 +280,12 @@ fish_status2 %&gt;%
 ##           total
 ##           &lt;dbl&gt;
 ## 1 1592778185024</code></pre>
+</div>
+<div id="all-done" class="section level2">
+<h2>All Done!</h2>
+<p>And we have made bunches of lanternfish. Hope you learned something!</p>
+<p>How would you do it? What’s your shortcut? Please <a href="https://twitter.com/zachbogart">share</a>!</p>
+<p>Till next time!</p>
 </div>
 </div>
 

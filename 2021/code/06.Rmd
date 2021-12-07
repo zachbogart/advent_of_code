@@ -87,6 +87,7 @@ length(fish_status)
 Adding to a vector wont work here. Make a dictionary of sorts and update it. 
 
 ```{r}
+# use dataframe as a dictionary
 one_day_better <- function(df) {
   df %>% mutate(
     coming_soon = num_0,
@@ -106,17 +107,20 @@ one_day_better <- function(df) {
     mutate(coming_soon = 0)
 }
 
+# make a blank dataframe to start
 blank <- tibble(x = c(paste("num", seq(0, 8), sep = "_"), "coming_soon"), value = 0) %>% 
   pivot_wider(names_from = x, values_from = value)
 ```
 
 ```{r}
+# manually find out the starting values
 tibble(fish) %>% 
   count(fish)
 ```
 
 
 ```{r}
+# update blank to starting conditions
 start <- blank %>% 
   mutate(
     num_1 = 89,
@@ -126,13 +130,22 @@ start <- blank %>%
     num_5 = 67
   )
 
+# make bunches of lanternfish!
 fish_status2 <- start
 for (i in seq(256)) {
   fish_status2 <- one_day_better(fish_status2)
 }
 
+# add up the big lanternfish population!
 fish_status2 %>% 
   pivot_longer(cols = everything()) %>% 
   summarise(total = sum(value))
 ```
 
+## All Done!
+
+And we have made bunches of lanternfish. Hope you learned something!
+
+How would you do it? What's your shortcut? Please [share](https://twitter.com/zachbogart)!
+
+Till next time!

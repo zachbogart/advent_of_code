@@ -1,0 +1,110 @@
+---
+author: "Zach Bogart"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+```
+
+```{r include=FALSE, eval=FALSE}
+# run this chunk to render
+day <- 7
+day_title <- "The Treachery of Whales"
+
+day_str <- stringr::str_pad(day, 2, pad = "0")
+rmarkdown::render(input = paste0("2021/code/", day_str, ".Rmd"), 
+                  output_dir = paste0("2021/", day),
+                  output_file = "index.html")
+```
+
+---
+title: "`r paste0("AoC 2021: Day ", day)`"
+---
+
+# Day `r day`: `r day_title`
+
+[Click for Problem Statement](`r paste0("https://adventofcode.com/2021/day/", day)`)
+
+[Back to 2021](/advent_of_code/2021/)
+
+---
+
+```{r include=FALSE}
+library(emo)
+```
+
+```{r message=FALSE}
+library(tidyverse)
+library(here)
+```
+
+```{r}
+path_data <- here("2021/inputs/07-input.txt")
+input <- tibble(x = read_lines(path_data))
+```
+
+In this one we must help the crabs save us from a giant whale. Let's go...
+
+![](https://media.giphy.com/media/3ohuPeV8N74RzYkqaI/giphy.gif)
+
+## Setup
+
+```{r}
+# raw data
+input <- read_lines(path_data)
+
+# make into a vector
+data <- input %>% 
+  str_split(pattern = ",")
+data <- as.numeric(data[[1]])
+
+# test input
+testing <- c(16,1,2,0,4,2,7,1,2,14)
+
+# dfs
+test <- tibble(raw = testing)
+df <- tibble(raw = data)
+```
+
+## Part 1
+
+The crabs need a position that minimizes the distance they collectively have to travel. So the median of the distribution.
+
+```{r}
+# every step is equal, so choose the median
+part_1 <- df %>% 
+  mutate(fuel_spent = abs(raw - median(raw)))
+
+# result
+part_1 %>% 
+  summarise(total_fuel = sum(fuel_spent))
+```
+
+## Part 2
+
+I would actually want a good explainer on why flooring is necessary rather than rounding. Never adds extra steps? Anywho, we can be fancy about finding the fuel spent thanks to [Gauss and his wiliness in school](https://nrich.maths.org/2478#:~:text=The%20most%20well%2Dknown%20story,wrote%20down%20the%20answer%205050.).
+
+```{r}
+
+# find the steps from the floored mean
+# then find spent fuel (thanks Gauss)
+part_2 <- df %>% 
+  mutate(steps = abs(raw - floor(mean(raw)))) %>% 
+  mutate(fuel_spent = (steps * (steps + 1) / 2))
+  
+# result
+part_2 %>% 
+  summarise(total_fuel = sum(fuel_spent))
+```
+
+## All Done!
+
+And the crabs have saved the day! Hope you learned something!
+
+How would you do it? What's your shortcut? Please [share](https://twitter.com/zachbogart)!
+
+Till next time!
+
+![](https://media.giphy.com/media/xP4Fk3xFSLTzSn7WKX/giphy.gif)
